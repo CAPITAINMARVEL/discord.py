@@ -700,7 +700,7 @@ class ViewStore:
         # If 3 lookups failed at this point then just discard it
         if item is None:
             return
-
+        interaction.valid = True
         # Note, at this point the View is *not* None
         item.view._dispatch_item(item, interaction)  # type: ignore
 
@@ -714,7 +714,7 @@ class ViewStore:
         if modal is None:
             _log.debug("Modal interaction referencing unknown custom_id %s. Discarding", custom_id)
             return
-
+        interaction.valid = True
         modal._dispatch_submit(interaction, components)
 
     def remove_interaction_mapping(self, interaction_id: int) -> None:
