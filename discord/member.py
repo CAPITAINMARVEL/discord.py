@@ -1204,6 +1204,23 @@ class Member(discord.abc.Messageable, _UserTag):
         """
         return self.guild.get_role(role_id) if self._roles.has(role_id) else None
 
+    def has_role(self, role_id: int, /) -> bool:
+        """Returns whether the member has the role with the given ID.
+
+        .. versionadded:: 2.0
+
+        Parameters
+        -----------
+        role_id: :class:`int`
+            The ID to check for.
+
+        Returns
+        --------
+        :class:`bool`
+            ``True`` if the member has the role, ``False`` otherwise.
+        """
+        return self._roles.has(role_id)
+
     def is_timed_out(self) -> bool:
         """Returns whether this member is timed out.
 
