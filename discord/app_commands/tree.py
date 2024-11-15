@@ -1301,6 +1301,6 @@ class CommandTree(Generic[ClientT]):
             await command._invoke_error_handlers(interaction, e)
             await self.on_error(interaction, e)
         else:
+            interaction.valid = True
             if not interaction.command_failed:
-                interaction.valid = True
                 self.client.dispatch('app_command_completion', interaction, command)
