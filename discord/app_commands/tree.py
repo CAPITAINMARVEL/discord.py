@@ -1133,6 +1133,7 @@ class CommandTree(Generic[ClientT]):
             await self.on_error(interaction, error)
 
     def _from_interaction(self, interaction: Interaction[ClientT]) -> None:
+        interaction.valid = True
         async def wrapper():
             try:
                 await self._call(interaction)
