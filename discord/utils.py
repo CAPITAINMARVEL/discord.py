@@ -108,7 +108,7 @@ __all__ = (
 )
 
 DISCORD_EPOCH = 1420070400000
-DEFAULT_FILE_SIZE_LIMIT_BYTES = 26214400
+DEFAULT_FILE_SIZE_LIMIT_BYTES = 10485760
 
 
 class _MissingSentinel:
@@ -1532,3 +1532,11 @@ def _format_call_duration(duration: datetime.timedelta) -> str:
             formatted = f"{years} years"
 
     return formatted
+
+
+class _RawReprMixin:
+    __slots__: Tuple[str, ...] = ()
+
+    def __repr__(self) -> str:
+        value = ' '.join(f'{attr}={getattr(self, attr)!r}' for attr in self.__slots__)
+        return f'<{self.__class__.__name__} {value}>'
