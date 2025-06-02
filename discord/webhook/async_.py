@@ -1620,8 +1620,7 @@ class Webhook(BaseWebhook):
         silent: bool = MISSING,
         applied_tags: List[ForumTag] = MISSING,
         poll: Poll = MISSING,
-    ) -> WebhookMessage:
-        ...
+    ) -> WebhookMessage: ...
 
     @overload
     async def send(
@@ -1645,8 +1644,7 @@ class Webhook(BaseWebhook):
         silent: bool = MISSING,
         applied_tags: List[ForumTag] = MISSING,
         poll: Poll = MISSING,
-    ) -> None:
-        ...
+    ) -> None: ...
 
     async def send(
         self,
@@ -1873,6 +1871,8 @@ class Webhook(BaseWebhook):
             msg = self._create_message(data, thread=thread)
 
         if view is not MISSING and not view.is_finished():
+            if msg is not None:
+                view.message = msg
             message_id = None if msg is None else msg.id
             self._state.store_view(view, message_id)
 
