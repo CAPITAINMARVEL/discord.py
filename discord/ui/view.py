@@ -33,6 +33,7 @@ import sys
 import time
 import os
 from .item import Item, ItemCallbackType
+from .select import Select
 from .dynamic import DynamicItem
 from ..components import (
     Component,
@@ -89,17 +90,19 @@ class _ViewWeights:
     # fmt: off
     __slots__ = (
         'weights',
+        'init_children'
     )
     # fmt: on
 
-    def __init__(self, children: List[Item]):
+    def __init__(self, children: List[Item], init_children: bool = True):
         self.weights: List[int] = [0, 0, 0, 0, 0]
 
-        key = lambda i: sys.maxsize if i.row is None else i.row
-        children = sorted(children, key=key)
-        for row, group in groupby(children, key=key):
-            for item in group:
-                self.add_item(item)
+        if init_children is True:
+            key = lambda i: sys.maxsize if i.row is None else i.row
+            children = sorted(children, key=key)
+            for row, group in groupby(children, key=key):
+                for item in group:
+                    self.add_item(item)
 
     def find_open_space(self, item: Item) -> int:
         for index, weight in enumerate(self.weights):
@@ -179,14 +182,19 @@ class View:
             item: Item = func.__discord_ui_model_type__(**func.__discord_ui_model_kwargs__)
             item.callback = _ViewCallback(func, self, item)  # type: ignore
             item._view = self
+            if isinstance(item, Select):
+                item.options = [option.copy() for option in item.options]
             setattr(self, func.__name__, item)
             children.append(item)
+            if self.__init_children is True:
+                children.append(item)
         return children
 
-    def __init__(self, *, timeout: Optional[float] = 180.0):
+    def __init__(self, *, timeout: Optional[float] = 180.0, init_children: bool = True):
         self.__timeout = timeout
+        self.__init_children = init_children
         self._children: List[Item[Self]] = self._init_children()
-        self.__weights = _ViewWeights(self._children)
+        self.__weights = _ViewWeights(self._children, init_children)
         self.id: str = os.urandom(16).hex()
         self._cache_key: Optional[int] = None
         self.__cancel_callback: Optional[Callable[[View], None]] = None
@@ -705,6 +713,8 @@ class ViewStore:
         # If 3 lookups failed at this point then just discard it
         if item is None:
             return
+        
+        interaction.valid = True
 
         # Note, at this point the View is *not* None
         item.view._dispatch_item(item, interaction)  # type: ignore
@@ -720,6 +730,7 @@ class ViewStore:
             _log.debug("Modal interaction referencing unknown custom_id %s. Discarding", custom_id)
             return
 
+        interaction.valid = True
         modal._dispatch_submit(interaction, components)
 
     def remove_interaction_mapping(self, interaction_id: int) -> None:

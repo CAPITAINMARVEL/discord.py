@@ -1146,6 +1146,7 @@ class CommandTree(Generic[ClientT]):
             await self.on_error(interaction, error)
 
     def _from_interaction(self, interaction: Interaction[ClientT]) -> None:
+        interaction.valid = True
         async def wrapper():
             try:
                 await self._call(interaction)
@@ -1255,6 +1256,7 @@ class CommandTree(Generic[ClientT]):
                 await ctx_menu.on_error(interaction, e)
             await self.on_error(interaction, e)
         else:
+            interaction.valid = True
             self.client.dispatch('app_command_completion', interaction, ctx_menu)
 
     async def interaction_check(self, interaction: Interaction[ClientT], /) -> bool:
@@ -1314,4 +1316,5 @@ class CommandTree(Generic[ClientT]):
             await self.on_error(interaction, e)
         else:
             if not interaction.command_failed:
+                interaction.valid = True
                 self.client.dispatch('app_command_completion', interaction, command)

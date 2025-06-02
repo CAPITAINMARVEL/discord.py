@@ -154,6 +154,9 @@ class Interaction(Generic[ClientT]):
         The context of the interaction.
 
         .. versionadded:: 2.4
+    valid: :class:`bool`
+        Whether the interaction is valid or not. An interaction is considered valid if a command or component was
+        successfully resolved.
     """
 
     __slots__: Tuple[str, ...] = (
@@ -186,6 +189,7 @@ class Interaction(Generic[ClientT]):
         'channel',
         '_cs_namespace',
         '_cs_command',
+        'valid',
     )
 
     def __init__(self, *, data: InteractionPayload, state: ConnectionState[ClientT]):
@@ -198,6 +202,7 @@ class Interaction(Generic[ClientT]):
         self._baton: Any = MISSING
         self.extras: Dict[Any, Any] = {}
         self.command_failed: bool = False
+        self.valid: bool = False
         self._from_data(data)
 
     def __repr__(self) -> str:
