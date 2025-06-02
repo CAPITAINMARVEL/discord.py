@@ -55,7 +55,7 @@ if TYPE_CHECKING:
     import re
 
     from ..interactions import Interaction
-    from ..message import Message
+    from ..message import Message, PartialMessage
     from ..types.components import Component as ComponentPayload
     from ..types.interactions import ModalSubmitComponentInteractionData as ModalSubmitComponentInteractionDataPayload
     from ..state import ConnectionState
@@ -161,6 +161,7 @@ class View:
     __discord_ui_view__: ClassVar[bool] = True
     __discord_ui_modal__: ClassVar[bool] = False
     __view_children_items__: ClassVar[List[ItemCallbackType[Any, Any]]] = []
+    message: Optional[Message | PartialMessage] = None
 
     def __init_subclass__(cls) -> None:
         super().__init_subclass__()

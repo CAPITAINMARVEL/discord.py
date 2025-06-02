@@ -574,6 +574,7 @@ class Interaction(Generic[ClientT]):
         state = _InteractionMessageState(self, self._state)
         message = InteractionMessage(state=state, channel=self.channel, data=data)  # type: ignore
         if view and not view.is_finished():
+            view.message = message
             self._state.store_view(view, message.id, interaction_id=self.id)
         return message
 
