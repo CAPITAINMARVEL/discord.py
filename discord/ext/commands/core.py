@@ -55,6 +55,7 @@ from .context import Context
 from .converter import Greedy, run_converters
 from .cooldowns import BucketType, Cooldown, CooldownMapping, DynamicCooldownMapping, MaxConcurrency
 from .errors import *
+from collections.abc import Iterable
 from .parameters import Parameter, Signature
 from discord.app_commands.commands import NUMPY_DOCSTRING_ARG_REGEX
 
@@ -1232,10 +1233,13 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
                     result.append(f'<{name} (upload a file)>')
                 continue
 
+            if inspect.isclass(annotation) and isinstance(annotation, Iterable):
+                name = "|".join([f"{e}" for e in annotation])
+
             # for typing.Literal[...], typing.Optional[typing.Literal[...]], and Greedy[typing.Literal[...]], the
             # parameter signature is a literal list of it's values
             if origin is Literal:
-                name = '|'.join(f'"{v}"' if isinstance(v, str) else str(v) for v in annotation.__args__)
+                name = '|'.join(f'{v}' if isinstance(v, str) else str(v) for v in annotation.__args__)
             if not param.required:
                 # We don't want None or '' to trigger the [name=value] case and instead it should
                 # do [name] since [name=None] or [name=] are not exactly useful for the user.
