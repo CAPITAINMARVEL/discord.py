@@ -1196,6 +1196,12 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
         return getattr(annotation, '__origin__', None) is Union and type(None) in annotation.__args__  # type: ignore
 
     @property
+    def command_signature(self) -> str:
+        """Returns commands signature"""
+        signature = self.signature
+        return f"{self.qualified_name} {signature}" if signature else f"{self.qualified_name}"
+
+    @property
     def signature(self) -> str:
         """:class:`str`: Returns a POSIX-like signature useful for help command output."""
         if self.usage is not None:
