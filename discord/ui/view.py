@@ -186,7 +186,7 @@ class View:
             if isinstance(item, Select):
                 item.options = [option.copy() for option in item.options]
             setattr(self, func.__name__, item)
-            children.append(item)
+
             if self.__init_children is True:
                 children.append(item)
         return children
@@ -714,7 +714,7 @@ class ViewStore:
         # If 3 lookups failed at this point then just discard it
         if item is None:
             return
-        
+
         interaction.valid = True
 
         # Note, at this point the View is *not* None
