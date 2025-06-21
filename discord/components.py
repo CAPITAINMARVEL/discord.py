@@ -444,7 +444,7 @@ class SelectOption:
 
     def copy(self) -> SelectOption:
         return self.__class__.from_dict(self.to_dict())
-    
+
 
 class TextInput(Component):
     """Represents a text input from the Discord Bot UI Kit.
@@ -646,13 +646,11 @@ class SelectDefaultValue:
 
 
 @overload
-def _component_factory(data: ActionRowChildComponentPayload) -> Optional[ActionRowChildComponentType]:
-    ...
+def _component_factory(data: ActionRowChildComponentPayload) -> Optional[ActionRowChildComponentType]: ...
 
 
 @overload
-def _component_factory(data: ComponentPayload) -> Optional[Union[ActionRow, ActionRowChildComponentType]]:
-    ...
+def _component_factory(data: ComponentPayload) -> Optional[Union[ActionRow, ActionRowChildComponentType]]: ...
 
 
 def _component_factory(data: ComponentPayload) -> Optional[Union[ActionRow, ActionRowChildComponentType]]:
