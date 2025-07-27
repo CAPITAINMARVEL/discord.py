@@ -1870,7 +1870,7 @@ class Webhook(BaseWebhook):
         if wait:
             msg = self._create_message(data, thread=thread)
 
-        if view is not MISSING and not view.is_finished():
+        if view is not MISSING and not view.is_finished() and view.is_dispatchable():
             if msg is not None:
                 view.message = msg
             message_id = None if msg is None else msg.id
