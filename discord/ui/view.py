@@ -164,19 +164,17 @@ class _ViewWeights:
     # fmt: off
     __slots__ = (
         'weights',
-        'init_children'
     )
     # fmt: on
 
-    def __init__(self, children: List[Item], init_children: bool = True):
+    def __init__(self, children: List[Item]):
         self.weights: List[int] = [0, 0, 0, 0, 0]
 
-        if init_children is True:
-            key = lambda i: sys.maxsize if i.row is None else i.row
-            children = sorted(children, key=key)
-            for row, group in groupby(children, key=key):
-                for item in group:
-                    self.add_item(item)
+        key = lambda i: sys.maxsize if i.row is None else i.row
+        children = sorted(children, key=key)
+        for row, group in groupby(children, key=key):
+            for item in group:
+                self.add_item(item)
 
     def find_open_space(self, item: Item) -> int:
         for index, weight in enumerate(self.weights):
@@ -224,9 +222,8 @@ class BaseView:
     __view_children_items__: ClassVar[Dict[str, ItemLike]] = {}
     message: Optional[Message | PartialMessage] = None
 
-    def __init__(self, *, timeout: Optional[float] = 180.0, init_children: bool = True) -> None:
+    def __init__(self, *, timeout: Optional[float] = 180.0) -> None:
         self.__timeout = timeout
-        self.__init_children = init_children
         self._children: List[Item[Self]] = self._init_children()
         self.id: str = os.urandom(16).hex()
         self._cache_key: Optional[int] = None
@@ -971,7 +968,6 @@ class ViewStore:
         for pattern, item in self._dynamic_items.items():
             match = pattern.fullmatch(custom_id)
             if match is not None:
-                interaction.valid = True
                 self.add_task(
                     asyncio.create_task(
                         self.schedule_dynamic_item_call(component_type, item, interaction, custom_id, match),
@@ -1022,7 +1018,6 @@ class ViewStore:
         if item is None:
             return
 
-        interaction.valid = True
         # Note, at this point the View is *not* None
         task = item.view._dispatch_item(item, interaction)  # type: ignore
         if task is not None:
@@ -1039,7 +1034,6 @@ class ViewStore:
             _log.debug("Modal interaction referencing unknown custom_id %s. Discarding", custom_id)
             return
 
-        interaction.valid = True
         self.add_task(modal._dispatch_submit(interaction, components))
 
     def remove_interaction_mapping(self, interaction_id: int) -> None:
