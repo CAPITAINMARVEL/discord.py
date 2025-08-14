@@ -222,8 +222,9 @@ class BaseView:
     __discord_ui_view__: ClassVar[bool] = False
     __discord_ui_modal__: ClassVar[bool] = False
     __view_children_items__: ClassVar[Dict[str, ItemLike]] = {}
+    message: Optional[Message | PartialMessage] = None
 
-    def __init__(self, *, timeout: Optional[float] = 180.0) -> None:
+    def __init__(self, *, timeout: Optional[float] = 180.0, init_children: bool = True) -> None:
         self.__timeout = timeout
         self.__init_children = init_children
         self._children: List[Item[Self]] = self._init_children()
@@ -690,12 +691,10 @@ class View(BaseView):
     if TYPE_CHECKING:
 
         @classmethod
-        def from_dict(cls, data: List[ComponentPayload], *, timeout: Optional[float] = 180.0) -> View:
-            ...
+        def from_dict(cls, data: List[ComponentPayload], *, timeout: Optional[float] = 180.0) -> View: ...
 
         @classmethod
-        def from_message(cls, message: Message, /, *, timeout: Optional[float] = 180.0) -> View:
-            ...
+        def from_message(cls, message: Message, /, *, timeout: Optional[float] = 180.0) -> View: ...
 
     def __init_subclass__(cls) -> None:
         super().__init_subclass__()
@@ -785,12 +784,10 @@ class LayoutView(BaseView):
     if TYPE_CHECKING:
 
         @classmethod
-        def from_dict(cls, data: List[ComponentPayload], *, timeout: Optional[float] = 180.0) -> LayoutView:
-            ...
+        def from_dict(cls, data: List[ComponentPayload], *, timeout: Optional[float] = 180.0) -> LayoutView: ...
 
         @classmethod
-        def from_message(cls, message: Message, /, *, timeout: Optional[float] = 180.0) -> LayoutView:
-            ...
+        def from_message(cls, message: Message, /, *, timeout: Optional[float] = 180.0) -> LayoutView: ...
 
     def __init__(self, *, timeout: Optional[float] = 180.0) -> None:
         super().__init__(timeout=timeout)
@@ -974,9 +971,9 @@ class ViewStore:
         for pattern, item in self._dynamic_items.items():
             match = pattern.fullmatch(custom_id)
             if match is not None:
+                interaction.valid = True
                 self.add_task(
-                    interaction.valid = True
-                asyncio.create_task(
+                    asyncio.create_task(
                         self.schedule_dynamic_item_call(component_type, item, interaction, custom_id, match),
                         name=f'discord-ui-dynamic-item-{item.__name__}-{custom_id}',
                     )
