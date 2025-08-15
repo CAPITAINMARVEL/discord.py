@@ -3064,6 +3064,7 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
             thread = Thread(guild=self.guild, state=self._state, data=data)
             message = Message(state=self._state, channel=thread, data=data['message'])
             if view and not view.is_finished() and view.is_dispatchable():
+                view.message = message
                 self._state.store_view(view, message.id)
 
             return ThreadWithMessage(thread=thread, message=message)

@@ -83,7 +83,7 @@ if TYPE_CHECKING:
     import re
 
     from ..interactions import Interaction
-    from ..message import Message
+    from ..message import Message, PartialMessage
     from ..types.components import ComponentBase as ComponentBasePayload, Component as ComponentPayload
     from ..types.interactions import ModalSubmitComponentInteractionData as ModalSubmitComponentInteractionDataPayload
     from ..state import ConnectionState
@@ -164,17 +164,19 @@ class _ViewWeights:
     # fmt: off
     __slots__ = (
         'weights',
+        'auto_add_items',
     )
     # fmt: on
 
-    def __init__(self, children: List[Item]):
+    def __init__(self, children: List[Item], auto_add_items: bool):
         self.weights: List[int] = [0, 0, 0, 0, 0]
 
-        key = lambda i: sys.maxsize if i.row is None else i.row
-        children = sorted(children, key=key)
-        for row, group in groupby(children, key=key):
-            for item in group:
-                self.add_item(item)
+        if auto_add_items is True:
+            key = lambda i: sys.maxsize if i.row is None else i.row
+            children = sorted(children, key=key)
+            for row, group in groupby(children, key=key):
+                for item in group:
+                    self.add_item(item)
 
     def find_open_space(self, item: Item) -> int:
         for index, weight in enumerate(self.weights):
@@ -220,6 +222,7 @@ class BaseView:
     __discord_ui_view__: ClassVar[bool] = False
     __discord_ui_modal__: ClassVar[bool] = False
     __view_children_items__: ClassVar[Dict[str, ItemLike]] = {}
+    message: Optional[Message | PartialMessage] = None
 
     def __init__(self, *, timeout: Optional[float] = 180.0) -> None:
         self.__timeout = timeout
@@ -687,12 +690,10 @@ class View(BaseView):
     if TYPE_CHECKING:
 
         @classmethod
-        def from_dict(cls, data: List[ComponentPayload], *, timeout: Optional[float] = 180.0) -> View:
-            ...
+        def from_dict(cls, data: List[ComponentPayload], *, timeout: Optional[float] = 180.0) -> View: ...
 
         @classmethod
-        def from_message(cls, message: Message, /, *, timeout: Optional[float] = 180.0) -> View:
-            ...
+        def from_message(cls, message: Message, /, *, timeout: Optional[float] = 180.0) -> View: ...
 
     def __init_subclass__(cls) -> None:
         super().__init_subclass__()
@@ -710,9 +711,9 @@ class View(BaseView):
 
         cls.__view_children_items__ = children
 
-    def __init__(self, *, timeout: Optional[float] = 180.0):
+    def __init__(self, *, timeout: Optional[float] = 180.0, auto_add_items: bool = True):
         super().__init__(timeout=timeout)
-        self.__weights = _ViewWeights(self._children)
+        self.__weights = _ViewWeights(self._children, auto_add_items)
 
     def to_components(self) -> List[Dict[str, Any]]:
         def key(item: Item) -> int:
@@ -782,12 +783,10 @@ class LayoutView(BaseView):
     if TYPE_CHECKING:
 
         @classmethod
-        def from_dict(cls, data: List[ComponentPayload], *, timeout: Optional[float] = 180.0) -> LayoutView:
-            ...
+        def from_dict(cls, data: List[ComponentPayload], *, timeout: Optional[float] = 180.0) -> LayoutView: ...
 
         @classmethod
-        def from_message(cls, message: Message, /, *, timeout: Optional[float] = 180.0) -> LayoutView:
-            ...
+        def from_message(cls, message: Message, /, *, timeout: Optional[float] = 180.0) -> LayoutView: ...
 
     def __init__(self, *, timeout: Optional[float] = 180.0) -> None:
         super().__init__(timeout=timeout)
@@ -971,6 +970,7 @@ class ViewStore:
         for pattern, item in self._dynamic_items.items():
             match = pattern.fullmatch(custom_id)
             if match is not None:
+                interaction.valid = True
                 self.add_task(
                     asyncio.create_task(
                         self.schedule_dynamic_item_call(component_type, item, interaction, custom_id, match),
@@ -1022,6 +1022,7 @@ class ViewStore:
             return
 
         # Note, at this point the View is *not* None
+        interaction.valid = True
         task = item.view._dispatch_item(item, interaction)  # type: ignore
         if task is not None:
             self.add_task(task)
@@ -1036,7 +1037,7 @@ class ViewStore:
         if modal is None:
             _log.debug("Modal interaction referencing unknown custom_id %s. Discarding", custom_id)
             return
-
+        interaction.valid = True
         self.add_task(modal._dispatch_submit(interaction, components))
 
     def remove_interaction_mapping(self, interaction_id: int) -> None:

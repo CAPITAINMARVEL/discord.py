@@ -152,7 +152,9 @@ class Interaction(Generic[ClientT]):
         This includes checks and execution.
     context: :class:`.AppCommandContext`
         The context of the interaction.
-
+    valid: :class:`bool`
+        Whether the interaction is valid or not. An interaction is considered valid if a command or component was
+        successfully resolved.
         .. versionadded:: 2.4
     filesize_limit: int
         The maximum number of bytes a file can have when responding to this interaction.
@@ -191,6 +193,7 @@ class Interaction(Generic[ClientT]):
         'channel',
         '_cs_namespace',
         '_cs_command',
+        'valid',
     )
 
     def __init__(self, *, data: InteractionPayload, state: ConnectionState[ClientT]):
@@ -203,6 +206,7 @@ class Interaction(Generic[ClientT]):
         self._baton: Any = MISSING
         self.extras: Dict[Any, Any] = {}
         self.command_failed: bool = False
+        self.valid: bool = False
         self._from_data(data)
 
     def __repr__(self) -> str:
@@ -916,8 +920,7 @@ class InteractionResponse(Generic[ClientT]):
         suppress_embeds: bool = False,
         silent: bool = False,
         delete_after: Optional[float] = None,
-    ) -> InteractionCallbackResponse[ClientT]:
-        ...
+    ) -> InteractionCallbackResponse[ClientT]: ...
 
     @overload
     async def send_message(
@@ -936,8 +939,7 @@ class InteractionResponse(Generic[ClientT]):
         silent: bool = False,
         delete_after: Optional[float] = None,
         poll: Poll = MISSING,
-    ) -> InteractionCallbackResponse[ClientT]:
-        ...
+    ) -> InteractionCallbackResponse[ClientT]: ...
 
     async def send_message(
         self,
@@ -1437,8 +1439,7 @@ class InteractionMessage(Message):
         view: LayoutView,
         allowed_mentions: Optional[AllowedMentions] = None,
         delete_after: Optional[float] = None,
-    ) -> InteractionMessage:
-        ...
+    ) -> InteractionMessage: ...
 
     @overload
     async def edit(
@@ -1452,8 +1453,7 @@ class InteractionMessage(Message):
         allowed_mentions: Optional[AllowedMentions] = None,
         delete_after: Optional[float] = None,
         poll: Poll = MISSING,
-    ) -> InteractionMessage:
-        ...
+    ) -> InteractionMessage: ...
 
     async def edit(
         self,

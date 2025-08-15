@@ -21,6 +21,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
+
 from __future__ import annotations
 
 import asyncio
@@ -398,6 +399,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
 
         .. versionadded:: 2.0
     """
+
     __original_kwargs__: Dict[str, Any]
 
     def __new__(cls, *args: Any, **kwargs: Any) -> Self:
@@ -520,7 +522,10 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
     @property
     def callback(
         self,
-    ) -> Union[Callable[Concatenate[CogT, Context[Any], P], Coro[T]], Callable[Concatenate[Context[Any], P], Coro[T]],]:
+    ) -> Union[
+        Callable[Concatenate[CogT, Context[Any], P], Coro[T]],
+        Callable[Concatenate[Context[Any], P], Coro[T]],
+    ]:
         return self._callback
 
     @callback.setter
@@ -1195,6 +1200,12 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
         return getattr(annotation, '__origin__', None) is Union and type(None) in annotation.__args__  # type: ignore
 
     @property
+    def command_signature(self) -> str:
+        """Returns commands signature"""
+        signature = self.signature
+        return f"{self.qualified_name} {signature}" if signature else f"{self.qualified_name}"
+
+    @property
     def signature(self) -> str:
         """:class:`str`: Returns a POSIX-like signature useful for help command output."""
         if self.usage is not None:
@@ -1235,7 +1246,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
             # for typing.Literal[...], typing.Optional[typing.Literal[...]], and Greedy[typing.Literal[...]], the
             # parameter signature is a literal list of it's values
             if origin is Literal:
-                name = '|'.join(f'"{v}"' if isinstance(v, str) else str(v) for v in annotation.__args__)
+                name = '|'.join(f'{v}' if isinstance(v, str) else str(v) for v in annotation.__args__)
             if not param.required:
                 # We don't want None or '' to trigger the [name=value] case and instead it should
                 # do [name] since [name=None] or [name=] are not exactly useful for the user.
@@ -1507,8 +1518,7 @@ class GroupMixin(Generic[CogT]):
             ]
         ],
         Command[CogT, P, T],
-    ]:
-        ...
+    ]: ...
 
     @overload
     def command(
@@ -1525,8 +1535,7 @@ class GroupMixin(Generic[CogT]):
             ]
         ],
         CommandT,
-    ]:
-        ...
+    ]: ...
 
     def command(
         self,
@@ -1566,8 +1575,7 @@ class GroupMixin(Generic[CogT]):
             ]
         ],
         Group[CogT, P, T],
-    ]:
-        ...
+    ]: ...
 
     @overload
     def group(
@@ -1584,8 +1592,7 @@ class GroupMixin(Generic[CogT]):
             ]
         ],
         GroupT,
-    ]:
-        ...
+    ]: ...
 
     def group(
         self,
@@ -1731,35 +1738,28 @@ if TYPE_CHECKING:
 
     class _CommandDecorator:
         @overload
-        def __call__(self, func: Callable[Concatenate[CogT, ContextT, P], Coro[T]], /) -> Command[CogT, P, T]:
-            ...
+        def __call__(self, func: Callable[Concatenate[CogT, ContextT, P], Coro[T]], /) -> Command[CogT, P, T]: ...
 
         @overload
-        def __call__(self, func: Callable[Concatenate[ContextT, P], Coro[T]], /) -> Command[None, P, T]:
-            ...
+        def __call__(self, func: Callable[Concatenate[ContextT, P], Coro[T]], /) -> Command[None, P, T]: ...
 
-        def __call__(self, func: Callable[..., Coro[T]], /) -> Any:
-            ...
+        def __call__(self, func: Callable[..., Coro[T]], /) -> Any: ...
 
     class _GroupDecorator:
         @overload
-        def __call__(self, func: Callable[Concatenate[CogT, ContextT, P], Coro[T]], /) -> Group[CogT, P, T]:
-            ...
+        def __call__(self, func: Callable[Concatenate[CogT, ContextT, P], Coro[T]], /) -> Group[CogT, P, T]: ...
 
         @overload
-        def __call__(self, func: Callable[Concatenate[ContextT, P], Coro[T]], /) -> Group[None, P, T]:
-            ...
+        def __call__(self, func: Callable[Concatenate[ContextT, P], Coro[T]], /) -> Group[None, P, T]: ...
 
-        def __call__(self, func: Callable[..., Coro[T]], /) -> Any:
-            ...
+        def __call__(self, func: Callable[..., Coro[T]], /) -> Any: ...
 
 
 @overload
 def command(
     name: str = ...,
     **attrs: Unpack[_CommandDecoratorKwargs],
-) -> _CommandDecorator:
-    ...
+) -> _CommandDecorator: ...
 
 
 @overload
@@ -1775,8 +1775,7 @@ def command(
         ]
     ],
     CommandT,
-]:
-    ...
+]: ...
 
 
 def command(
@@ -1828,8 +1827,7 @@ def command(
 def group(
     name: str = ...,
     **attrs: Unpack[_GroupDecoratorKwargs],
-) -> _GroupDecorator:
-    ...
+) -> _GroupDecorator: ...
 
 
 @overload
@@ -1845,8 +1843,7 @@ def group(
         ]
     ],
     GroupT,
-]:
-    ...
+]: ...
 
 
 def group(
@@ -2121,9 +2118,11 @@ def has_any_role(*items: Union[int, str]) -> Callable[[T], T]:
 
         # ctx.guild is None doesn't narrow ctx.author to Member
         if any(
-            ctx.author.get_role(item) is not None
-            if isinstance(item, int)
-            else discord.utils.get(ctx.author.roles, name=item) is not None
+            (
+                ctx.author.get_role(item) is not None
+                if isinstance(item, int)
+                else discord.utils.get(ctx.author.roles, name=item) is not None
+            )
             for item in items
         ):
             return True
