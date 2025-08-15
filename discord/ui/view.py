@@ -222,10 +222,10 @@ class BaseView:
     __discord_ui_view__: ClassVar[bool] = False
     __discord_ui_modal__: ClassVar[bool] = False
     __view_children_items__: ClassVar[Dict[str, ItemLike]] = {}
-    __auto_add_items: bool = True
 
-    def __init__(self, *, timeout: Optional[float] = 180.0) -> None:
+    def __init__(self, *, timeout: Optional[float] = 180.0, auto_add_items: bool = True) -> None:
         self.__timeout = timeout
+        self._auto_add_items = auto_add_items  # store it before calling _init_children
         self._children: List[Item[Self]] = self._init_children()
         self.id: str = os.urandom(16).hex()
         self._cache_key: Optional[int] = None
@@ -266,7 +266,7 @@ class BaseView:
                 if parent:
                     parents.get(parent, parent)._children.append(item)
                     continue
-                if self.__auto_add_items is True:
+                if self._auto_add_items is True:
                     children.append(item)
 
         return children
@@ -713,8 +713,7 @@ class View(BaseView):
         cls.__view_children_items__ = children
 
     def __init__(self, *, timeout: Optional[float] = 180.0, auto_add_items: bool = True):
-        super().__init__(timeout=timeout)
-        self.__auto_add_items = auto_add_items
+        super().__init__(timeout=timeout, auto_add_items=auto_add_items)
         self.__weights = _ViewWeights(self._children, auto_add_items)
 
     def to_components(self) -> List[Dict[str, Any]]:
@@ -791,8 +790,7 @@ class LayoutView(BaseView):
         def from_message(cls, message: Message, /, *, timeout: Optional[float] = 180.0) -> LayoutView: ...
 
     def __init__(self, *, timeout: Optional[float] = 180.0, auto_add_items: bool = True) -> None:
-        self.__auto_add_items = auto_add_items
-        super().__init__(timeout=timeout)
+        super().__init__(timeout=timeout, auto_add_items=auto_add_items)
 
         if self._total_children > 40:
             raise ValueError('maximum number of children exceeded (40)')
