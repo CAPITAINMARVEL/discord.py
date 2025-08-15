@@ -970,6 +970,7 @@ class ViewStore:
         for pattern, item in self._dynamic_items.items():
             match = pattern.fullmatch(custom_id)
             if match is not None:
+                interaction.valid = True
                 self.add_task(
                     asyncio.create_task(
                         self.schedule_dynamic_item_call(component_type, item, interaction, custom_id, match),
@@ -1021,6 +1022,7 @@ class ViewStore:
             return
 
         # Note, at this point the View is *not* None
+        interaction.valid = True
         task = item.view._dispatch_item(item, interaction)  # type: ignore
         if task is not None:
             self.add_task(task)
@@ -1036,6 +1038,7 @@ class ViewStore:
             _log.debug("Modal interaction referencing unknown custom_id %s. Discarding", custom_id)
             return
 
+        interaction.valid = True
         self.add_task(modal._dispatch_submit(interaction, components))
 
     def remove_interaction_mapping(self, interaction_id: int) -> None:
