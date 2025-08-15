@@ -83,7 +83,7 @@ if TYPE_CHECKING:
     import re
 
     from ..interactions import Interaction
-    from ..message import Message, PartialMessage
+    from ..message import Message
     from ..types.components import ComponentBase as ComponentBasePayload, Component as ComponentPayload
     from ..types.interactions import ModalSubmitComponentInteractionData as ModalSubmitComponentInteractionDataPayload
     from ..state import ConnectionState
@@ -222,7 +222,7 @@ class BaseView:
     __discord_ui_view__: ClassVar[bool] = False
     __discord_ui_modal__: ClassVar[bool] = False
     __view_children_items__: ClassVar[Dict[str, ItemLike]] = {}
-    message: Optional[Message | PartialMessage] = None
+    __auto_add_items: bool = True
 
     def __init__(self, *, timeout: Optional[float] = 180.0) -> None:
         self.__timeout = timeout
@@ -266,7 +266,8 @@ class BaseView:
                 if parent:
                     parents.get(parent, parent)._children.append(item)
                     continue
-                children.append(item)
+                if self.__auto_add_items is True:
+                    children.append(item)
 
         return children
 
@@ -713,6 +714,7 @@ class View(BaseView):
 
     def __init__(self, *, timeout: Optional[float] = 180.0, auto_add_items: bool = True):
         super().__init__(timeout=timeout)
+        self.__auto_add_items = auto_add_items
         self.__weights = _ViewWeights(self._children, auto_add_items)
 
     def to_components(self) -> List[Dict[str, Any]]:
@@ -788,7 +790,8 @@ class LayoutView(BaseView):
         @classmethod
         def from_message(cls, message: Message, /, *, timeout: Optional[float] = 180.0) -> LayoutView: ...
 
-    def __init__(self, *, timeout: Optional[float] = 180.0) -> None:
+    def __init__(self, *, timeout: Optional[float] = 180.0, auto_add_items: bool = True) -> None:
+        self.__auto_add_items = auto_add_items
         super().__init__(timeout=timeout)
 
         if self._total_children > 40:

@@ -1718,7 +1718,6 @@ class Messageable:
 
         ret = state.create_message(channel=channel, data=data)
         if view and not view.is_finished() and view.is_dispatchable():
-            view.message = ret
             state.store_view(view, ret.id)
 
         if poll:
