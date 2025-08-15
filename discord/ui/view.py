@@ -164,17 +164,19 @@ class _ViewWeights:
     # fmt: off
     __slots__ = (
         'weights',
+        'init_children'
     )
     # fmt: on
 
-    def __init__(self, children: List[Item]):
+    def __init__(self, children: List[Item], init_children: bool):
         self.weights: List[int] = [0, 0, 0, 0, 0]
 
-        key = lambda i: sys.maxsize if i.row is None else i.row
-        children = sorted(children, key=key)
-        for row, group in groupby(children, key=key):
-            for item in group:
-                self.add_item(item)
+        if init_children is True:
+            key = lambda i: sys.maxsize if i.row is None else i.row
+            children = sorted(children, key=key)
+            for row, group in groupby(children, key=key):
+                for item in group:
+                    self.add_item(item)
 
     def find_open_space(self, item: Item) -> int:
         for index, weight in enumerate(self.weights):
@@ -709,9 +711,9 @@ class View(BaseView):
 
         cls.__view_children_items__ = children
 
-    def __init__(self, *, timeout: Optional[float] = 180.0):
+    def __init__(self, *, timeout: Optional[float] = 180.0, init_children: bool = True):
         super().__init__(timeout=timeout)
-        self.__weights = _ViewWeights(self._children)
+        self.__weights = _ViewWeights(self._children, init_children)
 
     def to_components(self) -> List[Dict[str, Any]]:
         def key(item: Item) -> int:
