@@ -26,6 +26,7 @@ from __future__ import annotations
 
 import asyncio
 import datetime
+from enum import Enum
 import functools
 import inspect
 from typing import (
@@ -1242,6 +1243,9 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
                 else:
                     result.append(f'<{name} (upload a file)>')
                 continue
+
+            if issubclass(annotation, Enum):
+                name = '|'.join(f'{str(v)}' for v in annotation)
 
             # for typing.Literal[...], typing.Optional[typing.Literal[...]], and Greedy[typing.Literal[...]], the
             # parameter signature is a literal list of it's values
