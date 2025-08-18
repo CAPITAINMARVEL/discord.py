@@ -789,8 +789,8 @@ class LayoutView(BaseView):
         @classmethod
         def from_message(cls, message: Message, /, *, timeout: Optional[float] = 180.0) -> LayoutView: ...
 
-    def __init__(self, *, timeout: Optional[float] = 180.0, auto_add_items: bool = True) -> None:
-        super().__init__(timeout=timeout, auto_add_items=auto_add_items)
+    def __init__(self, *, timeout: Optional[float] = 180.0) -> None:
+        super().__init__(timeout=timeout)
 
         if self._total_children > 40:
             raise ValueError('maximum number of children exceeded (40)')
