@@ -323,6 +323,9 @@ class BaseView:
 
         self.__timeout = value
 
+    def _add_count(self, value: int) -> None:
+        self._total_children = max(0, self._total_children + value)
+
     @property
     def children(self) -> List[Item[Self]]:
         """List[:class:`Item`]: The list of children attached to this view."""
@@ -330,7 +333,8 @@ class BaseView:
 
     @classmethod
     def from_message(cls, message: Message, /, *, timeout: Optional[float] = 180.0) -> Union[View, LayoutView]:
-        """Converts a message's components into a :class:`View`.
+        """Converts a message's components into a :class:`View`
+        or :class:`LayoutView`.
 
         The :attr:`.Message.components` of a message are read-only
         and separate types from those in the ``discord.ui`` namespace.
@@ -422,10 +426,7 @@ class BaseView:
         if item._has_children():
             added += len(tuple(item.walk_children()))  # type: ignore
 
-        if self._is_layout() and self._total_children + added > 40:
-            raise ValueError('maximum number of children exceeded')
-
-        self._total_children += added
+        self._add_count(added)
         self._children.append(item)
         return self
 
@@ -449,11 +450,7 @@ class BaseView:
             removed = 1
             if item._has_children():
                 removed += len(tuple(item.walk_children()))  # type: ignore
-
-            if self._total_children - removed < 0:
-                self._total_children = 0
-            else:
-                self._total_children -= removed
+            self._add_count(-removed)
 
         return self
 
@@ -770,6 +767,9 @@ class LayoutView(BaseView):
 
     This object must be inherited to create a UI within Discord.
 
+    This differs from a :class:`View` in that it supports all component types
+    and uses what Discord refers to as "v2 components".
+
     You can find usage examples in the :resource:`repository <examples>`
 
     .. versionadded:: 2.6
@@ -817,6 +817,12 @@ class LayoutView(BaseView):
 
     def _is_layout(self) -> bool:
         return True
+
+    def _add_count(self, value: int) -> None:
+        if self._total_children + value > 40:
+            raise ValueError('maximum number of children exceeded (40)')
+
+        self._total_children = max(0, self._total_children + value)
 
     def to_components(self):
         components: List[Dict[str, Any]] = []
