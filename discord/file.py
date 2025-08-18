@@ -133,6 +133,12 @@ class File:
     @property
     def uri(self) -> str:
         """:class:`str`: Returns the ``attachment://<filename>`` URI for this file.
+        This is used in certain places such as embeds or components to refer
+        to an uploaded file via URL.
+
+        .. note::
+            Due to Discord's filename processing, the filename must be ASCII aphanumeric
+            with underscores, dashes, and periods.
 
         .. versionadded:: 2.6
         """
