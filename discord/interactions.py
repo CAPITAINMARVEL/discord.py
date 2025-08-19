@@ -95,8 +95,8 @@ if TYPE_CHECKING:
         GroupChannel,
     ]
     InteractionCallbackResource = Union[
-        "InteractionMessage",
-        "InteractionCallbackActivityInstance",
+        'InteractionMessage',
+        'InteractionCallbackActivityInstance',
     ]
 
 MISSING: Any = utils.MISSING
@@ -739,7 +739,6 @@ class InteractionCallbackResponse(Generic[ClientT]):
 
         resource = data.get('resource')
         if resource is not None:
-
             self.type = try_enum(InteractionResponseType, resource['type'])
 
             message = resource.get('message')

@@ -454,7 +454,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
         self.extras: Dict[Any, Any] = kwargs.get('extras', {})
 
         if not isinstance(self.aliases, (list, tuple)):
-            raise TypeError("Aliases of a command must be a list or a tuple of strings.")
+            raise TypeError('Aliases of a command must be a list or a tuple of strings.')
 
         self.description: str = inspect.cleandoc(kwargs.get('description', ''))
         self.hidden: bool = kwargs.get('hidden', False)
@@ -477,7 +477,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
         elif isinstance(cooldown, CooldownMapping):
             buckets: CooldownMapping[Context[Any]] = cooldown
         else:
-            raise TypeError("Cooldown must be an instance of CooldownMapping or None.")
+            raise TypeError('Cooldown must be an instance of CooldownMapping or None.')
         self._buckets: CooldownMapping[Context[Any]] = buckets
 
         try:
@@ -2229,7 +2229,7 @@ def has_permissions(**perms: Unpack[_PermissionsKwargs]) -> Check[Any]:
 
     invalid = set(perms) - set(discord.Permissions.VALID_FLAGS)
     if invalid:
-        raise TypeError(f"Invalid permission(s): {', '.join(invalid)}")
+        raise TypeError(f'Invalid permission(s): {", ".join(invalid)}')
 
     def predicate(ctx: Context[BotT]) -> bool:
         permissions = ctx.permissions
@@ -2254,7 +2254,7 @@ def bot_has_permissions(**perms: Unpack[_PermissionsKwargs]) -> Check[Any]:
 
     invalid = set(perms) - set(discord.Permissions.VALID_FLAGS)
     if invalid:
-        raise TypeError(f"Invalid permission(s): {', '.join(invalid)}")
+        raise TypeError(f'Invalid permission(s): {", ".join(invalid)}')
 
     def predicate(ctx: Context[BotT]) -> bool:
         permissions = ctx.bot_permissions
@@ -2281,7 +2281,7 @@ def has_guild_permissions(**perms: Unpack[_PermissionsKwargs]) -> Check[Any]:
 
     invalid = set(perms) - set(discord.Permissions.VALID_FLAGS)
     if invalid:
-        raise TypeError(f"Invalid permission(s): {', '.join(invalid)}")
+        raise TypeError(f'Invalid permission(s): {", ".join(invalid)}')
 
     def predicate(ctx: Context[BotT]) -> bool:
         if not ctx.guild:
@@ -2307,7 +2307,7 @@ def bot_has_guild_permissions(**perms: Unpack[_PermissionsKwargs]) -> Check[Any]
 
     invalid = set(perms) - set(discord.Permissions.VALID_FLAGS)
     if invalid:
-        raise TypeError(f"Invalid permission(s): {', '.join(invalid)}")
+        raise TypeError(f'Invalid permission(s): {", ".join(invalid)}')
 
     def predicate(ctx: Context[BotT]) -> bool:
         if not ctx.guild:
@@ -2547,7 +2547,7 @@ def dynamic_cooldown(
         The type of cooldown to have.
     """
     if not callable(cooldown):
-        raise TypeError("A callable must be provided")
+        raise TypeError('A callable must be provided')
 
     if type is BucketType.default:
         raise ValueError('BucketType.default cannot be used in dynamic cooldowns')

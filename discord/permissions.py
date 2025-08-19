@@ -93,12 +93,11 @@ if TYPE_CHECKING:
         send_polls: BoolOrNoneT
         create_polls: BoolOrNoneT
         use_external_apps: BoolOrNoneT
+        pin_messages: BoolOrNoneT
 
-    class _PermissionsKwargs(_BasePermissionsKwargs[bool]):
-        ...
+    class _PermissionsKwargs(_BasePermissionsKwargs[bool]): ...
 
-    class _PermissionOverwriteKwargs(_BasePermissionsKwargs[Optional[bool]]):
-        ...
+    class _PermissionOverwriteKwargs(_BasePermissionsKwargs[Optional[bool]]): ...
 
 
 # A permission alias works like a regular flag but is marked
@@ -219,14 +218,14 @@ class Permissions(BaseFlags):
         if isinstance(other, Permissions):
             return (self.value & other.value) == self.value
         else:
-            raise TypeError(f"cannot compare {self.__class__.__name__} with {other.__class__.__name__}")
+            raise TypeError(f'cannot compare {self.__class__.__name__} with {other.__class__.__name__}')
 
     def is_superset(self, other: Permissions) -> bool:
         """Returns ``True`` if self has the same or more permissions as other."""
         if isinstance(other, Permissions):
             return (self.value | other.value) == self.value
         else:
-            raise TypeError(f"cannot compare {self.__class__.__name__} with {other.__class__.__name__}")
+            raise TypeError(f'cannot compare {self.__class__.__name__} with {other.__class__.__name__}')
 
     def is_strict_subset(self, other: Permissions) -> bool:
         """Returns ``True`` if the permissions on other are a strict subset of those on self."""
@@ -253,7 +252,7 @@ class Permissions(BaseFlags):
         permissions set to ``True``.
         """
         # Some of these are 0 because we don't want to set unnecessary bits
-        return cls(0b0000_0000_0000_0110_0111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111)
+        return cls(0b0000_0000_0000_1110_0111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111)
 
     @classmethod
     def _timeout_mask(cls) -> int:
@@ -268,6 +267,7 @@ class Permissions(BaseFlags):
         base.read_messages = True
         base.send_tts_messages = False
         base.manage_messages = False
+        base.pin_messages = True
         base.create_private_threads = False
         base.create_public_threads = False
         base.manage_threads = False
@@ -326,7 +326,7 @@ class Permissions(BaseFlags):
             Added :attr:`send_polls`, :attr:`send_voice_messages`, attr:`use_external_sounds`,
             :attr:`use_embedded_activities`, and :attr:`use_external_apps` permissions.
         """
-        return cls(0b0000_0000_0000_0110_0110_0100_1111_1101_1011_0011_1111_0111_1111_1111_0101_0001)
+        return cls(0b0000_0000_0000_1110_0110_0100_1111_1101_1011_0011_1111_0111_1111_1111_0101_0001)
 
     @classmethod
     def general(cls) -> Self:
@@ -374,8 +374,11 @@ class Permissions(BaseFlags):
 
         .. versionchanged:: 2.4
             Added :attr:`send_polls` and :attr:`use_external_apps` permissions.
+
+        .. versionchanged:: 2.7
+            Added :attr:`pin_messages` permission.
         """
-        return cls(0b0000_0000_0000_0110_0100_0000_0111_1100_1000_0000_0000_0111_1111_1000_0100_0000)
+        return cls(0b0000_0000_0000_1110_0100_0000_0111_1100_1000_0000_0000_0111_1111_1000_0100_0000)
 
     @classmethod
     def voice(cls) -> Self:
@@ -569,7 +572,7 @@ class Permissions(BaseFlags):
 
     @flag_value
     def manage_messages(self) -> int:
-        """:class:`bool`: Returns ``True`` if a user can delete or pin messages in a text channel.
+        """:class:`bool`: Returns ``True`` if a user can delete messages or bypass slowmode in a text channel.
 
         .. note::
 
@@ -860,6 +863,14 @@ class Permissions(BaseFlags):
         """
         return 1 << 50
 
+    @flag_value
+    def pin_messages(self) -> int:
+        """:class:`bool`: Returns ``True`` if a user can pin messages.
+
+        .. versionadded:: 2.7
+        """
+        return 1 << 51
+
 
 def _augment_from_permissions(cls):
     cls.VALID_NAMES = set(Permissions.VALID_FLAGS)
@@ -983,6 +994,7 @@ class PermissionOverwrite:
         send_polls: Optional[bool]
         create_polls: Optional[bool]
         use_external_apps: Optional[bool]
+        pin_messages: Optional[bool]
 
     def __init__(self, **kwargs: Unpack[_PermissionOverwriteKwargs]) -> None:
         self._values: Dict[str, Optional[bool]] = {}

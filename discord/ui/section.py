@@ -21,6 +21,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Dict, Generator, List, Literal, Optional, TypeVar, Union, ClassVar
@@ -56,6 +57,11 @@ class Section(Item[V]):
         The section accessory.
     id: Optional[:class:`int`]
         The ID of this component. This must be unique across the view.
+
+    Attributes
+    ----------
+    accessory: :class:`Item`
+        The section accessory.
     """
 
     __item_repr_attributes__ = (

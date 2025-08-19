@@ -1801,7 +1801,10 @@ class ConnectionState(Generic[ClientT]):
             return self._emojis[emoji_id]
         except KeyError:
             return PartialEmoji.with_state(
-                self, animated=data.get('animated', False), id=emoji_id, name=data['name']  # type: ignore
+                self,
+                animated=data.get('animated', False),
+                id=emoji_id,
+                name=data['name'],  # type: ignore
             )
 
     def _upgrade_partial_emoji(self, emoji: PartialEmoji) -> Union[Emoji, PartialEmoji, str]:

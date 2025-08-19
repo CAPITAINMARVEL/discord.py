@@ -384,7 +384,7 @@ class BaseView:
                     if item._is_v2():
                         raise ValueError(f'{item.__class__.__name__} cannot be added to {view.__class__.__name__}')
                     view.add_item(item)
-                    row += 1
+                row += 1
                 continue
 
             item = _component_to_item(component)
@@ -1050,7 +1050,7 @@ class ViewStore:
     ) -> None:
         modal = self._modals.get(custom_id)
         if modal is None:
-            _log.debug("Modal interaction referencing unknown custom_id %s. Discarding", custom_id)
+            _log.debug('Modal interaction referencing unknown custom_id %s. Discarding', custom_id)
             return
         interaction.valid = True
         self.add_task(modal._dispatch_submit(interaction, components))
