@@ -46,6 +46,7 @@ from typing import (
     Union,
     overload,
     TypedDict,
+    Mapping,
 )
 import re
 
@@ -82,7 +83,7 @@ if TYPE_CHECKING:
         require_var_positional: bool
         cooldown_after_parsing: bool
         ignore_extra: bool
-        extras: Dict[Any, Any]
+        extras: Mapping[Any, Any]
 
     class _CommandKwargs(_CommandDecoratorKwargs, total=False):
         name: str
