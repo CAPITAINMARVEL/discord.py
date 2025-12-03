@@ -429,7 +429,7 @@ class ChoiceTransformer(IdentityTransformer):
 
 
 class UnionEnumValueTransformer(Transformer):
-    def __init__(self, *enums: Any) -> None:
+    def __init__(self, enums: Any) -> None:
         super().__init__()
 
         values = [m for e in enums for m in e]
@@ -804,7 +804,7 @@ def get_supported_annotation(
     if get_origin(annotation) is Union:
         args = get_args(annotation)
         if all(isinstance(arg, type) and issubclass(arg, (Enum, InternalEnum)) for arg in args):
-            return (UnionEnumValueTransformer(*args), MISSING, False)
+            return (UnionEnumValueTransformer(args), MISSING, False)
 
     if inspect.isclass(annotation):
         if issubclass(annotation, Transformer):
