@@ -43,6 +43,8 @@ from typing import (
     Type,
     TypeVar,
     Union,
+    get_args,
+    get_origin,
 )
 
 from .errors import AppCommandError, TransformerError
@@ -426,6 +428,46 @@ class ChoiceTransformer(IdentityTransformer):
         super().__init__(opt_type)
 
 
+class UnionEnumValueTransformer(Transformer):
+    def __init__(self, *enums: Any) -> None:
+        super().__init__()
+
+        values = [m for e in enums for m in e]
+        values.sort(key=lambda m: m.value)
+        if len(values) < 2:
+            raise TypeError('enum.Enum requires at least two values.')
+
+        first = type(values[0].value)
+        if first is int:
+            opt_type = AppCommandOptionType.integer
+        elif first is float:
+            opt_type = AppCommandOptionType.number
+        elif first is str:
+            opt_type = AppCommandOptionType.string
+        else:
+            raise TypeError(f'expected int, str, or float values not {first!r}')
+
+        self._type: AppCommandOptionType = opt_type
+        self._enums = enums
+        self._enum_map: Any = {v.value: v for v in values}
+        self._choices = [Choice(name=v.name, value=v.value) for v in values]
+
+    @property
+    def _error_display_name(self) -> str:
+        return " | ".join(e.__name__ for e in self._enums)
+
+    @property
+    def type(self) -> AppCommandOptionType:
+        return self._type
+
+    @property
+    def choices(self):
+        return self._choices
+
+    async def transform(self, interaction: Interaction, value: Any, /) -> Any:
+        return self._enum_map[value]
+
+
 class EnumValueTransformer(Transformer):
     def __init__(self, enum: Any) -> None:
         super().__init__()
@@ -758,6 +800,11 @@ def get_supported_annotation(
 
     if isinstance(annotation, Transformer):
         return (annotation, MISSING, False)
+
+    if get_origin(annotation) is Union:
+        args = get_args(annotation)
+        if all(isinstance(arg, type) and issubclass(arg, (Enum, InternalEnum)) for arg in args):
+            return (UnionEnumValueTransformer(*args), MISSING, False)
 
     if inspect.isclass(annotation):
         if issubclass(annotation, Transformer):
