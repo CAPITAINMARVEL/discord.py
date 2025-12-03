@@ -1245,7 +1245,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
                     result.append(f'<{name} (upload a file)>')
                 continue
 
-            if issubclass(annotation, Enum):
+            if inspect.isclass(annotation) and issubclass(annotation, Enum):
                 name = '|'.join(f'{str(v)}' for v in annotation)
 
             # for typing.Literal[...], typing.Optional[typing.Literal[...]], and Greedy[typing.Literal[...]], the
