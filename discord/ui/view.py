@@ -1032,9 +1032,12 @@ class ViewStore:
         if item is None:
             return
 
-        # Note, at this point the View is *not* None
+        if item.view is None:
+            _log.warning('View interaction referencing unknown view for item %s. Discarding', item)
+            return
+
         interaction.valid = True
-        task = item.view._dispatch_item(item, interaction)  # type: ignore
+        task = item.view._dispatch_item(item, interaction)
         if task is not None:
             self.add_task(task)
 
