@@ -301,6 +301,7 @@ class Loop(Generic[LF]):
         copy._injected = obj
         copy._before_loop = self._before_loop
         copy._after_loop = self._after_loop
+        copy._valid_exception = self._valid_exception
         copy._error = self._error
         setattr(obj, self.coro.__name__, copy)
         return copy
