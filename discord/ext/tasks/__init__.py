@@ -140,6 +140,14 @@ class Loop(Generic[LF]):
     The main interface to create this is through :func:`loop`.
     """
 
+    _valid_exception = (
+        OSError,
+        discord.GatewayNotFound,
+        discord.ConnectionClosed,
+        aiohttp.ClientError,
+        asyncio.TimeoutError,
+    )
+
     def __init__(
         self,
         coro: LF,
@@ -158,13 +166,6 @@ class Loop(Generic[LF]):
         self._handle: Optional[SleepHandle] = None
         self._task: Optional[asyncio.Task[None]] = None
         self._injected = None
-        self._valid_exception = (
-            OSError,
-            discord.GatewayNotFound,
-            discord.ConnectionClosed,
-            aiohttp.ClientError,
-            asyncio.TimeoutError,
-        )
 
         self._before_loop = None
         self._after_loop = None
@@ -499,6 +500,16 @@ class Loop(Generic[LF]):
                 raise TypeError(f'{exc!r} must inherit from BaseException.')
 
         self._valid_exception = (*self._valid_exception, *exceptions)
+
+    @classmethod
+    def add_global_exception_type(cls, *exceptions: Type[BaseException]) -> None:
+        for exc in exceptions:
+            if not inspect.isclass(exc):
+                raise TypeError(f'{exc!r} must be a class.')
+            if not issubclass(exc, BaseException):
+                raise TypeError(f'{exc!r} must inherit from BaseException.')
+
+        cls._valid_exception = (*cls._valid_exception, *exceptions)
 
     def clear_exception_types(self) -> None:
         """Removes all exception types that are handled.
