@@ -89,6 +89,7 @@ if TYPE_CHECKING:
         name: str
 
     class _GroupDecoratorKwargs(_CommandDecoratorKwargs, total=False):
+        inherit_checks: bool
         invoke_without_command: bool
         case_insensitive: bool
 
@@ -496,6 +497,13 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
         # bandaid for the fact that sometimes parent can be the bot instance
         parent: Optional[GroupMixin[Any]] = kwargs.get('parent')
         self.parent: Optional[GroupMixin[Any]] = parent if isinstance(parent, _BaseCommand) else None
+        if self.parent:
+            inherited: List[UserCheck[Context[Any]]] = []
+            for parent in reversed(self.parents):
+                if parent.inherit_checks and parent.checks:
+                    inherited.extend(parent.checks)
+            inherited.extend(self.checks)
+            self.checks = inherited
 
         self._before_invoke: Optional[Hook] = None
         try:
@@ -1633,6 +1641,12 @@ class Group(GroupMixin[CogT], Command[CogT, P, T]):
 
     Attributes
     -----------
+    inherit_checks: :class:`bool`
+        Indicates whether the checks registered on this group should be
+        inherited by its subcommands. If ``True``, the group’s checks are
+        applied to subcommands and are executed before any checks defined
+        on the subcommand itself. If ``False``, subcommands do not use the
+        group’s checks at all. Defaults to ``False``.
     invoke_without_command: :class:`bool`
         Indicates if the group callback should begin parsing and
         invocation only if no subcommand was found. Useful for
@@ -1648,6 +1662,7 @@ class Group(GroupMixin[CogT], Command[CogT, P, T]):
     """
 
     def __init__(self, *args: Any, **attrs: Unpack[_GroupKwargs]) -> None:
+        self.inherit_checks: bool = attrs.pop('inherit_checks', False)
         self.invoke_without_command: bool = attrs.pop('invoke_without_command', False)
         super().__init__(*args, **attrs)
 

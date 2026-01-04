@@ -61,6 +61,7 @@ if TYPE_CHECKING:
         description: Union[str, app_commands.locale_str]
 
     class _HybridGroupKwargs(_HybridCommandDecoratorKwargs, total=False):
+        inherit_checks: bool
         with_app_command: bool
         guild_ids: list[int]
         guild_only: bool
