@@ -676,6 +676,11 @@ class View(BaseView):
     timeout: Optional[:class:`float`]
         Timeout in seconds from last interaction with the UI before no longer accepting input.
         If ``None`` then there is no timeout.
+
+    add_items_on_init: :class:`bool`
+        Whether UI items defined on the class should be automatically added to the view
+        during initialization. If ``False``, items must be added manually using
+        :meth:`add_item`.
     """
 
     __discord_ui_view__: ClassVar[bool] = True
