@@ -781,6 +781,11 @@ class LayoutView(BaseView):
     timeout: Optional[:class:`float`]
         Timeout in seconds from last interaction with the UI before no longer accepting input.
         If ``None`` then there is no timeout.
+
+    add_items_on_init: :class:`bool`
+        Whether UI items defined on the class should be automatically added to the view
+        during initialization. If ``False``, items must be added manually using
+        :meth:`add_item`.
     """
 
     if TYPE_CHECKING:
@@ -788,8 +793,8 @@ class LayoutView(BaseView):
         @classmethod
         def from_message(cls, message: Message, /, *, timeout: Optional[float] = 180.0) -> LayoutView: ...
 
-    def __init__(self, *, timeout: Optional[float] = 180.0) -> None:
-        super().__init__(timeout=timeout)
+    def __init__(self, *, timeout: Optional[float] = 180.0, add_items_on_init: bool = True) -> None:
+        super().__init__(timeout=timeout, add_items_on_init=add_items_on_init)
 
         if self._total_children > 40:
             raise ValueError('maximum number of children exceeded (40)')
