@@ -166,19 +166,17 @@ class _ViewWeights:
     # fmt: off
     __slots__ = (
         'weights',
-        'auto_add_items',
     )
     # fmt: on
 
-    def __init__(self, children: List[Item], auto_add_items: bool):
+    def __init__(self, children: List[Item]):
         self.weights: List[int] = [0, 0, 0, 0, 0]
 
-        if auto_add_items is True:
-            key = lambda i: sys.maxsize if i.row is None else i.row
-            children = sorted(children, key=key)
-            for row, group in groupby(children, key=key):
-                for item in group:
-                    self.add_item(item)
+        key = lambda i: sys.maxsize if i.row is None else i.row
+        children = sorted(children, key=key)
+        for row, group in groupby(children, key=key):
+            for item in group:
+                self.add_item(item)
 
     def find_open_space(self, item: Item) -> int:
         for index, weight in enumerate(self.weights):
@@ -213,9 +211,9 @@ class BaseView:
     __discord_ui_modal__: ClassVar[bool] = False
     __view_children_items__: ClassVar[Dict[str, ItemLike]] = {}
 
-    def __init__(self, *, timeout: Optional[float] = 180.0, auto_add_items: bool = True) -> None:
+    def __init__(self, *, timeout: Optional[float] = 180.0, add_items_on_init: bool = True) -> None:
+        self.__add_items_on_init = add_items_on_init
         self.__timeout = timeout
-        self._auto_add_items = auto_add_items  # store it before calling _init_children
         self._children: List[Item[Self]] = self._init_children()
         self.id: str = os.urandom(16).hex()
         self._cache_key: Optional[int] = None
@@ -256,9 +254,8 @@ class BaseView:
                 if parent:
                     parents.get(parent, parent)._children.append(item)
                     continue
-                if self._auto_add_items is True:
+                if self.__add_items_on_init is True:
                     children.append(item)
-
         return children
 
     async def __timeout_task_impl(self) -> None:
@@ -704,9 +701,9 @@ class View(BaseView):
 
         cls.__view_children_items__ = children
 
-    def __init__(self, *, timeout: Optional[float] = 180.0, auto_add_items: bool = True):
-        super().__init__(timeout=timeout, auto_add_items=auto_add_items)
-        self.__weights = _ViewWeights(self._children, auto_add_items)
+    def __init__(self, *, timeout: Optional[float] = 180.0, add_items_on_init: bool = True):
+        super().__init__(timeout=timeout, add_items_on_init=add_items_on_init)
+        self.__weights = _ViewWeights(self._children)
 
     def to_components(self) -> List[Dict[str, Any]]:
         def key(item: Item) -> int:
