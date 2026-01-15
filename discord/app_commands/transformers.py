@@ -803,8 +803,10 @@ def get_supported_annotation(
 
     if get_origin(annotation) is Union:
         args = get_args(annotation)
-        if all(isinstance(arg, type) and issubclass(arg, (Enum, InternalEnum)) for arg in args):
-            return (UnionEnumValueTransformer(args), MISSING, False)
+        args_non_none = tuple(arg for arg in args if arg is not type(None))
+        if all(isinstance(arg, type) and issubclass(arg, (Enum, InternalEnum)) for arg in args_non_none):
+            default = None if any(arg is None for arg in args) else MISSING
+            return (UnionEnumValueTransformer(args_non_none), default, False)
 
     if inspect.isclass(annotation):
         if issubclass(annotation, Transformer):
