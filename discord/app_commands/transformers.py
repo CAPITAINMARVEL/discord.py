@@ -433,7 +433,6 @@ class UnionEnumValueTransformer(Transformer):
         super().__init__()
 
         values = [m for e in enums for m in e]
-        values.sort(key=lambda m: m.value)
         if len(values) < 2:
             raise TypeError('enum.Enum requires at least two values.')
 
