@@ -27,13 +27,29 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 import logging
-from typing import Any, Dict, Optional, Generic, TYPE_CHECKING, Sequence, Tuple, Union, List, overload
+from typing import (
+    Any,
+    Dict,
+    Optional,
+    Generic,
+    TYPE_CHECKING,
+    Sequence,
+    Tuple,
+    Union,
+    List,
+    overload,
+)
 import asyncio
 import datetime
 
 from . import utils
 from .enums import try_enum, Locale, InteractionType, InteractionResponseType
-from .errors import InteractionResponded, HTTPException, ClientException, DiscordException
+from .errors import (
+    InteractionResponded,
+    HTTPException,
+    ClientException,
+    DiscordException,
+)
 from .flags import MessageFlags
 from .channel import ChannelType
 from ._types import ClientT
@@ -44,18 +60,27 @@ from .member import Member
 from .message import Message, Attachment
 from .permissions import Permissions
 from .http import handle_message_parameters
-from .webhook.async_ import async_context, Webhook, interaction_response_params, interaction_message_response_params
+from .webhook.async_ import (
+    async_context,
+    Webhook,
+    interaction_response_params,
+    interaction_message_response_params,
+)
 from .app_commands.installs import AppCommandContext
 from .app_commands.namespace import Namespace
-from .app_commands.translator import locale_str, TranslationContext, TranslationContextLocation
+from .app_commands.translator import (
+    locale_str,
+    TranslationContext,
+    TranslationContextLocation,
+)
 from .channel import _threaded_channel_factory
 
 __all__ = (
-    'Interaction',
-    'InteractionMessage',
-    'InteractionResponse',
-    'InteractionCallbackResponse',
-    'InteractionCallbackActivityInstance',
+    "Interaction",
+    "InteractionMessage",
+    "InteractionResponse",
+    "InteractionCallbackResponse",
+    "InteractionCallbackActivityInstance",
 )
 
 if TYPE_CHECKING:
@@ -65,6 +90,8 @@ if TYPE_CHECKING:
         ApplicationCommandInteractionData,
         InteractionCallback as InteractionCallbackPayload,
         InteractionCallbackActivity as InteractionCallbackActivityPayload,
+        MessageComponentInteractionData,
+        ModalSubmitInteractionData,
     )
     from .types.webhook import (
         Webhook as WebhookPayload,
@@ -79,7 +106,15 @@ if TYPE_CHECKING:
     from .ui.view import BaseView, View, LayoutView
     from .app_commands.models import Choice, ChoiceT
     from .ui.modal import Modal
-    from .channel import VoiceChannel, StageChannel, TextChannel, ForumChannel, CategoryChannel, DMChannel, GroupChannel
+    from .channel import (
+        VoiceChannel,
+        StageChannel,
+        TextChannel,
+        ForumChannel,
+        CategoryChannel,
+        DMChannel,
+        GroupChannel,
+    )
     from .threads import Thread
     from .app_commands.commands import Command, ContextMenu
     from .poll import Poll
@@ -95,8 +130,8 @@ if TYPE_CHECKING:
         GroupChannel,
     ]
     InteractionCallbackResource = Union[
-        'InteractionMessage',
-        'InteractionCallbackActivityInstance',
+        "InteractionMessage",
+        "InteractionCallbackActivityInstance",
     ]
 
 MISSING: Any = utils.MISSING
@@ -163,37 +198,39 @@ class Interaction(Generic[ClientT]):
     """
 
     __slots__: Tuple[str, ...] = (
-        'id',
-        'type',
-        'guild_id',
-        'data',
-        'application_id',
-        'message',
-        'user',
-        'token',
-        'version',
-        'locale',
-        'guild_locale',
-        'extras',
-        'command_failed',
-        'entitlement_sku_ids',
-        'entitlements',
-        'context',
-        'filesize_limit',
-        '_integration_owners',
-        '_permissions',
-        '_app_permissions',
-        '_state',
-        '_client',
-        '_session',
-        '_baton',
-        '_original_response',
-        '_cs_response',
-        '_cs_followup',
-        'channel',
-        '_cs_namespace',
-        '_cs_command',
-        'valid',
+        "id",
+        "type",
+        "guild_id",
+        "data",
+        "application_id",
+        "message",
+        "user",
+        "token",
+        "version",
+        "locale",
+        "guild_locale",
+        "extras",
+        "command_failed",
+        "entitlement_sku_ids",
+        "entitlements",
+        "context",
+        "filesize_limit",
+        "_integration_owners",
+        "_permissions",
+        "_app_permissions",
+        "_state",
+        "_client",
+        "_session",
+        "_baton",
+        "_original_response",
+        "_cs_response",
+        "_cs_followup",
+        "channel",
+        "_cs_namespace",
+        "_cs_command",
+        "valid",
+        "_cs_command_id",
+        "_cs_custom_id",
     )
 
     def __init__(self, *, data: InteractionPayload, state: ConnectionState[ClientT]):
@@ -210,54 +247,71 @@ class Interaction(Generic[ClientT]):
         self._from_data(data)
 
     def __repr__(self) -> str:
-        return f'<{self.__class__.__name__} id={self.id} type={self.type!r} guild_id={self.guild_id!r} user={self.user!r}>'
+        return f"<{self.__class__.__name__} id={self.id} type={self.type!r} guild_id={self.guild_id!r} user={self.user!r}>"
 
     def _from_data(self, data: InteractionPayload):
-        self.id: int = int(data['id'])
-        self.type: InteractionType = try_enum(InteractionType, data['type'])
-        self.data: Optional[InteractionData] = data.get('data')
-        self.token: str = data['token']
-        self.version: int = data['version']
-        self.guild_id: Optional[int] = utils._get_as_snowflake(data, 'guild_id')
+        self.id: int = int(data["id"])
+        self.type: InteractionType = try_enum(InteractionType, data["type"])
+        self.data: Optional[InteractionData] = data.get("data")
+        self.token: str = data["token"]
+        self.version: int = data["version"]
+        self.guild_id: Optional[int] = utils._get_as_snowflake(data, "guild_id")
         self.channel: Optional[InteractionChannel] = None
-        self.application_id: int = int(data['application_id'])
-        self.entitlement_sku_ids: List[int] = [int(x) for x in data.get('entitlement_skus', []) or []]
-        self.entitlements: List[Entitlement] = [Entitlement(self._state, x) for x in data.get('entitlements', [])]
-        self.filesize_limit: int = data['attachment_size_limit']
+        self.application_id: int = int(data["application_id"])
+        self.entitlement_sku_ids: List[int] = [
+            int(x) for x in data.get("entitlement_skus", []) or []
+        ]
+        self.entitlements: List[Entitlement] = [
+            Entitlement(self._state, x) for x in data.get("entitlements", [])
+        ]
+        self.filesize_limit: int = data["attachment_size_limit"]
         # This is not entirely useful currently, unsure how to expose it in a way that it is.
         self._integration_owners: Dict[int, Snowflake] = {
-            int(k): int(v) for k, v in data.get('authorizing_integration_owners', {}).items()
+            int(k): int(v)
+            for k, v in data.get("authorizing_integration_owners", {}).items()
         }
         try:
-            value = data['context']  # pyright: ignore[reportTypedDictNotRequiredAccess]
+            value = data["context"]  # pyright: ignore[reportTypedDictNotRequiredAccess]
             self.context = AppCommandContext._from_value([value])
         except KeyError:
             self.context = AppCommandContext()
 
-        self.locale: Locale = try_enum(Locale, data.get('locale', 'en-US'))
+        self.locale: Locale = try_enum(Locale, data.get("locale", "en-US"))
         self.guild_locale: Optional[Locale]
         try:
-            self.guild_locale = try_enum(Locale, data['guild_locale'])  # pyright: ignore[reportTypedDictNotRequiredAccess]
+            self.guild_locale = try_enum(
+                Locale, data["guild_locale"]
+            )  # pyright: ignore[reportTypedDictNotRequiredAccess]
         except KeyError:
             self.guild_locale = None
 
         guild = None
         if self.guild_id:
             # The data type is a TypedDict but it doesn't narrow to Dict[str, Any] properly
-            guild = self._state._get_or_create_unavailable_guild(self.guild_id, data=data.get('guild'))  # type: ignore
+            guild = self._state._get_or_create_unavailable_guild(self.guild_id, data=data.get("guild"))  # type: ignore
             if guild.me is None and self._client.user is not None:
-                guild._add_member(Member._from_client_user(user=self._client.user, guild=guild, state=self._state))
+                guild._add_member(
+                    Member._from_client_user(
+                        user=self._client.user, guild=guild, state=self._state
+                    )
+                )
 
-        raw_channel = data.get('channel', {})
-        channel_id = utils._get_as_snowflake(raw_channel, 'id')
+        raw_channel = data.get("channel", {})
+        channel_id = utils._get_as_snowflake(raw_channel, "id")
         if channel_id is not None and guild is not None:
             self.channel = guild and guild._resolve_channel(channel_id)
 
-        raw_ch_type = raw_channel.get('type')
+        raw_ch_type = raw_channel.get("type")
         if self.channel is None and raw_ch_type is not None:
-            factory, ch_type = _threaded_channel_factory(raw_ch_type)  # type is never None
+            factory, ch_type = _threaded_channel_factory(
+                raw_ch_type
+            )  # type is never None
             if factory is None:
-                logging.info('Unknown channel type {type} for channel ID {id}.'.format_map(raw_channel))
+                logging.info(
+                    "Unknown channel type {type} for channel ID {id}.".format_map(
+                        raw_channel
+                    )
+                )
             else:
                 if ch_type in (ChannelType.group, ChannelType.private):
                     self.channel = factory(me=self._client.user, data=raw_channel, state=self._state)  # type: ignore
@@ -267,13 +321,13 @@ class Interaction(Generic[ClientT]):
         self.message: Optional[Message]
         try:
             # The channel and message payloads are mismatched yet handled properly at runtime
-            self.message = Message(state=self._state, channel=self.channel, data=data['message'])  # type: ignore
+            self.message = Message(state=self._state, channel=self.channel, data=data["message"])  # type: ignore
         except KeyError:
             self.message = None
 
         self.user: Union[User, Member] = MISSING
         self._permissions: int = 0
-        self._app_permissions: int = int(data.get('app_permissions', 0))
+        self._app_permissions: int = int(data.get("app_permissions", 0))
 
         if guild is not None:
             # Upgrade Message.guild in case it's missing with partial guild data
@@ -281,7 +335,7 @@ class Interaction(Generic[ClientT]):
                 self.message.guild = guild
 
             try:
-                member = data['member']  # type: ignore # The key is optional and handled
+                member = data["member"]  # type: ignore # The key is optional and handled
             except KeyError:
                 pass
             else:
@@ -289,7 +343,7 @@ class Interaction(Generic[ClientT]):
                 self._permissions = self.user._permissions or 0
         else:
             try:
-                self.user = User(state=self._state, data=data['user'])  # type: ignore # The key is optional and handled
+                self.user = User(state=self._state, data=data["user"])  # type: ignore # The key is optional and handled
             except KeyError:
                 pass
 
@@ -308,7 +362,9 @@ class Interaction(Generic[ClientT]):
         # The user.guild attribute is set in __init__ to the fallback guild if available
         # Therefore, we can use that instead of recreating it every time this property is
         # accessed
-        return (self._state and self._state._get_guild(self.guild_id)) or getattr(self.user, 'guild', None)
+        return (self._state and self._state._get_guild(self.guild_id)) or getattr(
+            self.user, "guild", None
+        )
 
     @property
     def channel_id(self) -> Optional[int]:
@@ -328,14 +384,17 @@ class Interaction(Generic[ClientT]):
         """:class:`Permissions`: The resolved permissions of the application or the bot, including overwrites."""
         return Permissions(self._app_permissions)
 
-    @utils.cached_slot_property('_cs_namespace')
+    @utils.cached_slot_property("_cs_namespace")
     def namespace(self) -> Namespace:
         """:class:`app_commands.Namespace`: The resolved namespace for this interaction.
 
         If the interaction is not an application command related interaction or the client does not have a
         tree attached to it then this returns an empty namespace.
         """
-        if self.type not in (InteractionType.application_command, InteractionType.autocomplete):
+        if self.type not in (
+            InteractionType.application_command,
+            InteractionType.autocomplete,
+        ):
             return Namespace(self, {}, [])
 
         tree = self._state._command_tree
@@ -350,9 +409,9 @@ class Interaction(Generic[ClientT]):
         except DiscordException:
             options = []
 
-        return Namespace(self, data.get('resolved', {}), options)
+        return Namespace(self, data.get("resolved", {}), options)
 
-    @utils.cached_slot_property('_cs_command')
+    @utils.cached_slot_property("_cs_command")
     def command(self) -> Optional[Union[Command[Any, ..., Any], ContextMenu]]:
         """Optional[Union[:class:`app_commands.Command`, :class:`app_commands.ContextMenu`]]: The command being called from
         this interaction.
@@ -360,7 +419,10 @@ class Interaction(Generic[ClientT]):
         If the interaction is not an application command related interaction or the command is not found in the client's
         attached tree then ``None`` is returned.
         """
-        if self.type not in (InteractionType.application_command, InteractionType.autocomplete):
+        if self.type not in (
+            InteractionType.application_command,
+            InteractionType.autocomplete,
+        ):
             return None
 
         tree = self._state._command_tree
@@ -369,7 +431,7 @@ class Interaction(Generic[ClientT]):
 
         # The type checker does not understand this narrowing
         data: ApplicationCommandInteractionData = self.data  # type: ignore
-        cmd_type = data.get('type', 1)
+        cmd_type = data.get("type", 1)
         if cmd_type == 1:
             try:
                 command, _ = tree._get_app_command_options(data)
@@ -380,7 +442,25 @@ class Interaction(Generic[ClientT]):
         else:
             return tree._get_context_menu(data)
 
-    @utils.cached_slot_property('_cs_response')
+    @utils.cached_slot_property("_cs_command_id")
+    def command_id(self) -> Optional[int]:
+        """Optional[:class:`int`]: The ID of the command that triggered this interaction.
+
+        Only applicable if :attr:`type` is one of, :attr:`InteractionType.application_command` or
+        :attr:`InteractionType.autocomplete`.
+
+        .. versionadded:: 2.7
+        """
+        if self.type not in (
+            InteractionType.application_command,
+            InteractionType.autocomplete,
+        ):
+            return None
+
+        data: ApplicationCommandInteractionData = self.data  # type: ignore
+        return int(data.get("id", 0))
+
+    @utils.cached_slot_property("_cs_response")
     def response(self) -> InteractionResponse[ClientT]:
         """:class:`InteractionResponse`: Returns an object responsible for handling responding to the interaction.
 
@@ -389,13 +469,13 @@ class Interaction(Generic[ClientT]):
         """
         return InteractionResponse(self)
 
-    @utils.cached_slot_property('_cs_followup')
+    @utils.cached_slot_property("_cs_followup")
     def followup(self) -> Webhook:
         """:class:`Webhook`: Returns the follow up webhook for follow up interactions."""
         payload: WebhookPayload = {
-            'id': self.application_id,
-            'type': 3,
-            'token': self.token,
+            "id": self.application_id,
+            "type": 3,
+            "token": self.token,
         }
         return Webhook.from_state(data=payload, state=self._state)
 
@@ -408,6 +488,21 @@ class Interaction(Generic[ClientT]):
     def expires_at(self) -> datetime.datetime:
         """:class:`datetime.datetime`: When the interaction expires."""
         return self.created_at + datetime.timedelta(minutes=15)
+
+    @utils.cached_slot_property("_cs_custom_id")
+    def custom_id(self) -> Optional[str]:
+        """Optional[:class:`str`]: The custom ID of the component that triggered this interaction.
+
+        Only applicable if :attr:`type` is one of, :attr:`InteractionType.component` or
+        :attr:`InteractionType.modal_submit`.
+
+        .. versionadded:: 2.7
+        """
+        if self.type not in (InteractionType.component, InteractionType.modal_submit):
+            return None
+
+        data: Union[MessageComponentInteractionData, ModalSubmitInteractionData] = self.data  # type: ignore
+        return data.get("custom_id")
 
     def is_expired(self) -> bool:
         """:class:`bool`: Returns ``True`` if the interaction is expired."""
@@ -462,7 +557,7 @@ class Interaction(Generic[ClientT]):
         # TODO: fix later to not raise?
         channel = self.channel
         if channel is None:
-            raise ClientException('Channel for message could not be resolved')
+            raise ClientException("Channel for message could not be resolved")
 
         adapter = async_context.get()
         http = self._state.http
@@ -616,7 +711,11 @@ class Interaction(Generic[ClientT]):
         )
 
     async def translate(
-        self, string: Union[str, locale_str], *, locale: Locale = MISSING, data: Any = MISSING
+        self,
+        string: Union[str, locale_str],
+        *,
+        locale: Locale = MISSING,
+        data: Any = MISSING,
     ) -> Optional[str]:
         """|coro|
 
@@ -655,7 +754,9 @@ class Interaction(Generic[ClientT]):
         if data is MISSING:
             data = self.command or self.message
 
-        context = TranslationContext(location=TranslationContextLocation.other, data=data)
+        context = TranslationContext(
+            location=TranslationContextLocation.other, data=data
+        )
         return await translator.translate(string, locale=locale, context=context)
 
 
@@ -670,10 +771,10 @@ class InteractionCallbackActivityInstance:
         The activity instance ID.
     """
 
-    __slots__ = ('id',)
+    __slots__ = ("id",)
 
     def __init__(self, data: InteractionCallbackActivityPayload) -> None:
-        self.id: str = data['id']
+        self.id: str = data["id"]
 
 
 class InteractionCallbackResponse(Generic[ClientT]):
@@ -698,15 +799,15 @@ class InteractionCallbackResponse(Generic[ClientT]):
     """
 
     __slots__ = (
-        '_state',
-        '_parent',
-        'type',
-        'id',
-        '_thinking',
-        '_ephemeral',
-        'message_id',
-        'activity_id',
-        'resource',
+        "_state",
+        "_parent",
+        "type",
+        "id",
+        "_thinking",
+        "_ephemeral",
+        "message_id",
+        "activity_id",
+        "resource",
     )
 
     def __init__(
@@ -723,29 +824,33 @@ class InteractionCallbackResponse(Generic[ClientT]):
         self._update(data)
 
     def __repr__(self) -> str:
-        return f'<InteractionCallbackResponse id={self.id} type={self.type!r}>'
+        return f"<InteractionCallbackResponse id={self.id} type={self.type!r}>"
 
     def _update(self, data: InteractionCallbackPayload) -> None:
-        interaction = data['interaction']
+        interaction = data["interaction"]
 
-        self.id: int = int(interaction['id'])
-        self._thinking: bool = interaction.get('response_message_loading', False)
-        self._ephemeral: bool = interaction.get('response_message_ephemeral', False)
+        self.id: int = int(interaction["id"])
+        self._thinking: bool = interaction.get("response_message_loading", False)
+        self._ephemeral: bool = interaction.get("response_message_ephemeral", False)
 
-        self.message_id: Optional[int] = utils._get_as_snowflake(interaction, 'response_message_id')
-        self.activity_id: Optional[str] = interaction.get('activity_instance_id')
+        self.message_id: Optional[int] = utils._get_as_snowflake(
+            interaction, "response_message_id"
+        )
+        self.activity_id: Optional[str] = interaction.get("activity_instance_id")
 
         self.resource: Optional[InteractionCallbackResource] = None
 
-        resource = data.get('resource')
+        resource = data.get("resource")
         if resource is not None:
-            self.type = try_enum(InteractionResponseType, resource['type'])
+            self.type = try_enum(InteractionResponseType, resource["type"])
 
-            message = resource.get('message')
-            activity_instance = resource.get('activity_instance')
+            message = resource.get("message")
+            activity_instance = resource.get("activity_instance")
             if message is not None:
                 self.resource = InteractionMessage(
-                    state=_InteractionMessageState(self._parent, self._state),  # pyright: ignore[reportArgumentType]
+                    state=_InteractionMessageState(
+                        self._parent, self._state
+                    ),  # pyright: ignore[reportArgumentType]
                     channel=self._parent.channel,  # type: ignore # channel should be the correct type here
                     data=message,
                 )
@@ -770,8 +875,8 @@ class InteractionResponse(Generic[ClientT]):
     """
 
     __slots__: Tuple[str, ...] = (
-        '_response_type',
-        '_parent',
+        "_response_type",
+        "_parent",
     )
 
     def __init__(self, parent: Interaction[ClientT]):
@@ -842,18 +947,21 @@ class InteractionResponse(Generic[ClientT]):
         defer_type: int = 0
         data: Optional[Dict[str, Any]] = None
         parent = self._parent
-        if parent.type is InteractionType.component or parent.type is InteractionType.modal_submit:
+        if (
+            parent.type is InteractionType.component
+            or parent.type is InteractionType.modal_submit
+        ):
             defer_type = (
                 InteractionResponseType.deferred_channel_message.value
                 if thinking
                 else InteractionResponseType.deferred_message_update.value
             )
             if thinking and ephemeral:
-                data = {'flags': 64}
+                data = {"flags": 64}
         elif parent.type is InteractionType.application_command:
             defer_type = InteractionResponseType.deferred_channel_message.value
             if ephemeral:
-                data = {'flags': 64}
+                data = {"flags": 64}
 
         if defer_type:
             adapter = async_context.get()
@@ -1067,7 +1175,11 @@ class InteractionResponse(Generic[ClientT]):
 
             # If the interaction type isn't an application command then there's no way
             # to obtain this interaction_id again, so just default to None
-            entity_id = parent.id if parent.type is InteractionType.application_command else None
+            entity_id = (
+                parent.id
+                if parent.type is InteractionType.application_command
+                else None
+            )
             self._parent._state.store_view(view, entity_id)
 
         self._response_type = InteractionResponseType.channel_message
@@ -1177,7 +1289,11 @@ class InteractionResponse(Generic[ClientT]):
             message_id = msg.id
             # If this was invoked via an application command then we can use its original interaction ID
             # Since this is used as a cache key for view updates
-            original_interaction_id = msg.interaction_metadata.id if msg.interaction_metadata is not None else None
+            original_interaction_id = (
+                msg.interaction_metadata.id
+                if msg.interaction_metadata is not None
+                else None
+            )
         else:
             message_id = None
             original_interaction_id = None
@@ -1273,7 +1389,9 @@ class InteractionResponse(Generic[ClientT]):
         adapter = async_context.get()
         http = parent._state.http
 
-        params = interaction_response_params(InteractionResponseType.modal.value, modal.to_dict())
+        params = interaction_response_params(
+            InteractionResponseType.modal.value, modal.to_dict()
+        )
         response = await adapter.create_interaction_response(
             parent.id,
             parent.token,
@@ -1319,20 +1437,27 @@ class InteractionResponse(Generic[ClientT]):
         if translator is not None:
             user_locale = self._parent.locale
             payload: Dict[str, Any] = {
-                'choices': [await option.get_translated_payload_for_locale(translator, user_locale) for option in choices],
+                "choices": [
+                    await option.get_translated_payload_for_locale(
+                        translator, user_locale
+                    )
+                    for option in choices
+                ],
             }
         else:
             payload: Dict[str, Any] = {
-                'choices': [option.to_dict() for option in choices],
+                "choices": [option.to_dict() for option in choices],
             }
 
         parent = self._parent
         if parent.type is not InteractionType.autocomplete:
-            raise ValueError('cannot respond to this interaction with autocomplete.')
+            raise ValueError("cannot respond to this interaction with autocomplete.")
 
         adapter = async_context.get()
         http = parent._state.http
-        params = interaction_response_params(type=InteractionResponseType.autocomplete_result.value, data=payload)
+        params = interaction_response_params(
+            type=InteractionResponseType.autocomplete_result.value, data=payload
+        )
         await adapter.create_interaction_response(
             parent.id,
             parent.token,
@@ -1372,7 +1497,9 @@ class InteractionResponse(Generic[ClientT]):
         adapter = async_context.get()
         http = parent._state.http
 
-        params = interaction_response_params(InteractionResponseType.launch_activity.value)
+        params = interaction_response_params(
+            InteractionResponseType.launch_activity.value
+        )
         response = await adapter.create_interaction_response(
             parent.id,
             parent.token,
@@ -1392,7 +1519,7 @@ class InteractionResponse(Generic[ClientT]):
 
 
 class _InteractionMessageState:
-    __slots__ = ('_parent', '_interaction')
+    __slots__ = ("_parent", "_interaction")
 
     def __init__(self, interaction: Interaction, parent: ConnectionState):
         self._interaction: Interaction = interaction
@@ -1594,7 +1721,9 @@ class InteractionMessage(Message):
         :class:`InteractionMessage`
             The newly edited message.
         """
-        return await self.edit(attachments=[a for a in self.attachments if a not in attachments])
+        return await self.edit(
+            attachments=[a for a in self.attachments if a not in attachments]
+        )
 
     async def delete(self, *, delay: Optional[float] = None) -> None:
         """|coro|
