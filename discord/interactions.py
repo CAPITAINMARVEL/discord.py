@@ -84,6 +84,7 @@ __all__ = (
 )
 
 if TYPE_CHECKING:
+    from collections.abc import Mapping
     from .types.interactions import (
         Interaction as InteractionPayload,
         InteractionData,
@@ -241,7 +242,7 @@ class Interaction(Generic[ClientT]):
         # This baton is used for extra data that might be useful for the lifecycle of
         # an interaction. This is mainly for internal purposes and it gives it a free-for-all slot.
         self._baton: Any = MISSING
-        self.extras: Dict[Any, Any] = {}
+        self.extras: Mapping[Any, Any] = {}
         self.command_failed: bool = False
         self.valid: bool = False
         self._from_data(data)
