@@ -62,7 +62,13 @@ from .installs import AppCommandContext, AppInstallationType
 from .translator import Translator, locale_str
 from ..errors import ClientException, HTTPException
 from ..enums import AppCommandType, InteractionType
-from ..utils import MISSING, _get_as_snowflake, _is_submodule, _shorten
+from ..utils import (
+    MISSING,
+    _get_as_snowflake,
+    _iscoroutinefunction,
+    _is_submodule,
+    _shorten,
+)
 from .._types import ClientT
 
 
@@ -893,7 +899,7 @@ class CommandTree(Generic[ClientT]):
             not match the signature.
         """
 
-        if not inspect.iscoroutinefunction(coro):
+        if not _iscoroutinefunction(coro):
             raise TypeError("The error handler must be a coroutine.")
 
         params = inspect.signature(coro).parameters

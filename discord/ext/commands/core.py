@@ -444,7 +444,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
         /,
         **kwargs: Unpack[_CommandKwargs],
     ) -> None:
-        if not asyncio.iscoroutinefunction(func):
+        if not discord.utils._iscoroutinefunction(func):
             raise TypeError("Callback must be a coroutine.")
 
         name = kwargs.get("name") or func.__name__
@@ -2042,7 +2042,7 @@ def check(predicate: UserCheck[ContextT], /) -> Check[ContextT]:
 
         return func
 
-    if inspect.iscoroutinefunction(predicate):
+    if discord.utils._iscoroutinefunction(predicate):
         decorator.predicate = predicate
     else:
 
@@ -2482,7 +2482,7 @@ def guild_only() -> Check[Any]:
 
         return func
 
-    if inspect.iscoroutinefunction(predicate):
+    if discord.utils._iscoroutinefunction(predicate):
         decorator.predicate = predicate
     else:
 
@@ -2558,7 +2558,7 @@ def is_nsfw() -> Check[Any]:
 
         return func
 
-    if inspect.iscoroutinefunction(predicate):
+    if discord.utils._iscoroutinefunction(predicate):
         decorator.predicate = predicate
     else:
 

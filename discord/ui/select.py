@@ -40,14 +40,13 @@ from typing import (
 )
 from contextvars import ContextVar
 import copy
-import inspect
 import os
 
 from .item import Item, ContainedItemCallbackType as ItemCallbackType, _ItemCallback
 from ..enums import ChannelType, ComponentType, SelectDefaultValueType
 from ..partial_emoji import PartialEmoji
 from ..emoji import Emoji
-from ..utils import MISSING, _human_join
+from ..utils import MISSING, _human_join, _iscoroutinefunction
 from ..components import (
     SelectOption,
     SelectMenu,
@@ -1209,7 +1208,7 @@ def select(
     """
 
     def decorator(func: ItemCallbackType[S, BaseSelectT]) -> ItemCallbackType[S, BaseSelectT]:
-        if not inspect.iscoroutinefunction(func):
+        if not _iscoroutinefunction(func):
             raise TypeError('select function must be a coroutine function')
         callback_cls = getattr(cls, '__origin__', cls)
         if not issubclass(callback_cls, BaseSelect):
